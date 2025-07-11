@@ -1,8 +1,8 @@
-// --- L'écran de quête (QuestScreen) reste inchangé ---
+// --- L'écran de quête (QuestScreen) ---
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-// L'écran de quête (QuestScreen) reste inchangé
+// L'écran de quête (QuestScreen)
 class QuestScreen extends StatelessWidget {
   final List<ScanResult> players;
 
