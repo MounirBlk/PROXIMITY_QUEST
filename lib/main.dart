@@ -87,7 +87,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
         print("Bluetooth est ON. Démarrage du scan et de l'advertising.");
         _showSnackBar("Bluetooth activé. Démarrage...");
         _startScan();
-        _startAdvertising();
+        //_startAdvertising();
       } else {
         print("Bluetooth est OFF. Arrêt du scan et de l'advertising.");
         _showSnackBar("Bluetooth désactivé. Arrêt.", isError: true);
@@ -96,7 +96,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
           isAdvertising = false;
         });
         FlutterBluePlus.stopScan();
-        flutterBlePeripheral.stop(); // Arrête l'advertising
+        //flutterBlePeripheral.stop(); // Arrête l'advertising
       }
     });
   }
@@ -234,7 +234,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
         setState(() {
           // --- Stocke TOUS les résultats dans _rawScanResults ---
           _rawScanResults = results;
-          scanResults = results.where((result) {
+          scanResults = _rawScanResults.where((result) {
             return result.device.remoteId.str.toUpperCase() !=
                 _myDeviceId.toUpperCase();
           }).toList();
@@ -291,7 +291,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
     _questActive = true;
 
     // Arrêter le scan et l'advertising pendant la quête pour économiser la batterie
-    _stopAdvertising();
+    //_stopAdvertising();
     FlutterBluePlus.stopScan();
 
     Navigator.push(
@@ -301,7 +301,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
       // Une fois que l'utilisateur quitte la QuestScreen, réinitialise l'état
       _questActive = false;
       _startScan(); // Redémarre le scan
-      _startAdvertising(); // Redémarre l'advertising
+      //_startAdvertising(); // Redémarre l'advertising
     });
   }
 
@@ -373,7 +373,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
   @override
   void dispose() {
     FlutterBluePlus.stopScan();
-    flutterBlePeripheral.stop();
+    //flutterBlePeripheral.stop();
     super.dispose();
   }
 
@@ -388,11 +388,11 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
             onPressed: isScanning ? FlutterBluePlus.stopScan : _startScan,
             tooltip: 'Toggle Scan',
           ),
-          IconButton(
+          /*IconButton(
             icon: Icon(isAdvertising ? Icons.wifi : Icons.wifi_off),
             onPressed: isAdvertising ? _stopAdvertising : _startAdvertising,
             tooltip: 'Toggle Advertising',
-          ),
+          ),*/
         ],
       ),
       body: Column(
