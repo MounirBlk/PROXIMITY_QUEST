@@ -41,8 +41,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
   final FlutterBlePeripheral flutterBlePeripheral =
       FlutterBlePeripheral(); // INSTANCE POUR L'ADVERTISING
   List<ScanResult> scanResults = [];
-  List<ScanResult> _rawScanResults =
-      []; // Nouvelle liste pour les résultats bruts
+  List<ScanResult> _rawScanResults = []; // résultats bruts
   bool isScanning = false;
   bool isAdvertising = false; // Nouvel état pour l'advertising
   bool _questActive = false;
@@ -52,8 +51,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
 
   // --- UUID de Service Spécifique à Proximity Quest ---
   // C'est l'identifiant que tes applications vont annoncer et scanner.
-  static const String GAME_SERVICE_UUID =
-      "B27A751F-A6E6-407B-866B-02095F2B57B7";
+  static const String gameServiceId = "B27A751F-A6E6-407B-866B-02092F2B57B7";
 
   @override
   void initState() {
@@ -87,7 +85,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
         print("Bluetooth est ON. Démarrage du scan et de l'advertising.");
         _showSnackBar("Bluetooth activé. Démarrage...");
         _startScan();
-        //_startAdvertising();
+        _startAdvertising();
       } else {
         print("Bluetooth est OFF. Arrêt du scan et de l'advertising.");
         _showSnackBar("Bluetooth désactivé. Arrêt.", isError: true);
@@ -96,7 +94,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
           isAdvertising = false;
         });
         FlutterBluePlus.stopScan();
-        //flutterBlePeripheral.stop(); // Arrête l'advertising
+        _stopAdvertising(); // Arrête l'advertising
       }
     });
   }
@@ -144,7 +142,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
     try {
       // Configure l'annonceur
       AdvertiseData advertiseData = AdvertiseData(
-        serviceUuid: GAME_SERVICE_UUID, // L'UUID de notre jeu
+        serviceUuid: gameServiceId, // L'UUID de notre jeu
         includeDeviceName:
             true, // Inclut le nom de l'appareil (optionnel, mais utile)
         // manufacturerData: { // Exemple d'ajout de données fabricant si tu veux encoder _myDeviceId
@@ -170,7 +168,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
         });
         _showSnackBar("Advertising démarré.");
       }
-      print("Advertising démarré avec Service UUID: $GAME_SERVICE_UUID");
+      print("Advertising démarré avec Service UUID: $gameServiceId");
     } catch (e) {
       print("Erreur au démarrage de l'advertising: $e");
       if (mounted) {
@@ -225,14 +223,13 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
       await FlutterBluePlus.stopScan();
 
       FlutterBluePlus.startScan(
-        withServices: [Guid(GAME_SERVICE_UUID)],
+        withServices: [Guid(gameServiceId)],
         timeout: const Duration(seconds: 10),
       );
 
       FlutterBluePlus.scanResults.listen((results) {
         if (!mounted) return;
         setState(() {
-          // --- Stocke TOUS les résultats dans _rawScanResults ---
           _rawScanResults = results;
           scanResults = _rawScanResults.where((result) {
             return result.device.remoteId.str.toUpperCase() !=
@@ -291,7 +288,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
     _questActive = true;
 
     // Arrêter le scan et l'advertising pendant la quête pour économiser la batterie
-    //_stopAdvertising();
+    _stopAdvertising();
     FlutterBluePlus.stopScan();
 
     Navigator.push(
@@ -301,7 +298,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
       // Une fois que l'utilisateur quitte la QuestScreen, réinitialise l'état
       _questActive = false;
       _startScan(); // Redémarre le scan
-      //_startAdvertising(); // Redémarre l'advertising
+      _startAdvertising(); // Redémarre l'advertising
     });
   }
 
@@ -373,7 +370,7 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
   @override
   void dispose() {
     FlutterBluePlus.stopScan();
-    //flutterBlePeripheral.stop();
+    _stopAdvertising(); // Arrête l'advertising
     super.dispose();
   }
 
@@ -388,11 +385,11 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
             onPressed: isScanning ? FlutterBluePlus.stopScan : _startScan,
             tooltip: 'Toggle Scan',
           ),
-          /*IconButton(
+          IconButton(
             icon: Icon(isAdvertising ? Icons.wifi : Icons.wifi_off),
             onPressed: isAdvertising ? _stopAdvertising : _startAdvertising,
             tooltip: 'Toggle Advertising',
-          ),*/
+          ),
         ],
       ),
       body: Column(
@@ -419,127 +416,60 @@ class _ProximityScannerScreenState extends State<ProximityScannerScreen> {
           // Toggle Button pour choisir entre les résultats bruts et filtrés
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _showRawResults = !_showRawResults; // Inverse l'état
-                });
-              },
-              child: Text(
-                _showRawResults
-                    ? 'Afficher joueurs détectés'
-                    : 'Afficher TOUS les appareils (brut)',
-              ),
-            ),
+            child: Text('Joueurs détectés'),
           ),
           Expanded(
-            child: _showRawResults
-                ? (_rawScanResults.isEmpty
-                      ? Center(
-                          child: Text(
-                            isScanning
-                                ? 'Recherche d\'appareils bruts...'
-                                : 'Aucun appareil brut détecté.',
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: _rawScanResults.length,
-                          itemBuilder: (context, index) {
-                            final result = _rawScanResults[index];
-                            return Card(
-                              margin: const EdgeInsets.all(8.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Appareil: ${result.device.name.isNotEmpty ? result.device.name : 'Inconnu'}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('ID: ${result.device.remoteId.str}'),
-                                    Text('RSSI: ${result.rssi} dBm'),
-                                    // Afficher les services UUID détectés
-                                    if (result
-                                        .advertisementData
-                                        .serviceUuids
-                                        .isNotEmpty)
-                                      Text(
-                                        'Services: ${result.advertisementData.serviceUuids.map((g) => g.str.substring(4, 8)).join(', ')}',
-                                      ) // Affiche une partie de l'UUID pour la lisibilité
-                                    else
-                                      const Text('Services: Aucun'),
-                                    // Indiquer si cet appareil est censé être un joueur
-                                    if (result.advertisementData.serviceUuids
-                                        .contains(GAME_SERVICE_UUID))
-                                      const Text(
-                                        'Ceci est un appareil Proximity Quest !',
-                                        style: TextStyle(
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ),
-                                  ],
+            child: (scanResults.isEmpty
+                ? Center(
+                    child: Text(
+                      isScanning
+                          ? 'Recherche d\'autres joueurs de Proximity Quest...'
+                          : 'Aucun autre joueur Proximity Quest détecté.',
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: scanResults.length,
+                    itemBuilder: (context, index) {
+                      final result = scanResults[index];
+                      return Card(
+                        margin: const EdgeInsets.all(8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Joueur: ${result.device.platformName.isNotEmpty ? result.device.platformName : 'Inconnu'}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          },
-                        ))
-                : (scanResults.isEmpty
-                      ? Center(
-                          child: Text(
-                            isScanning
-                                ? 'Recherche d\'autres joueurs de Proximity Quest...'
-                                : 'Aucun autre joueur Proximity Quest détecté.',
+                              Text('ID: ${result.device.remoteId.str}'),
+                              Text('RSSI: ${result.rssi} dBm'),
+                              if (result.rssi > -60)
+                                const Text(
+                                  'Statut: Très Proche !',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else if (result.rssi > -75)
+                                const Text(
+                                  'Statut: Proche',
+                                  style: TextStyle(color: Colors.orange),
+                                )
+                              else
+                                const Text('Statut: Éloigné'),
+                            ],
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: scanResults.length,
-                          itemBuilder: (context, index) {
-                            final result = scanResults[index];
-                            return Card(
-                              margin: const EdgeInsets.all(8.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Joueur: ${result.device.name.isNotEmpty ? result.device.name : 'Inconnu'}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('ID: ${result.device.remoteId.str}'),
-                                    Text('RSSI: ${result.rssi} dBm'),
-                                    if (result.rssi > -60)
-                                      const Text(
-                                        'Statut: Très Proche !',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    else if (result.rssi > -75)
-                                      const Text(
-                                        'Statut: Proche',
-                                        style: TextStyle(color: Colors.orange),
-                                      )
-                                    else
-                                      const Text('Statut: Éloigné'),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        )),
+                        ),
+                      );
+                    },
+                  )),
           ),
         ],
       ),
     );
   }
-
-  // Nouvelle variable d'état pour le toggle
-  bool _showRawResults = false;
 }

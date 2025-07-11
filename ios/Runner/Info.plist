@@ -2,19 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Votre position est utilisée pour détecter les joueurs à proximité afin de commencer une quête de proximité.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Proximity Quest a besoin de votre Bluetooth pour trouver d'autres joueurs à proximité.</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>Votre position est utilisée pour détecter les joueurs à proximité afin de commencer une quête de proximité.</string>
+    <string>Proximity Quest a besoin de votre Bluetooth pour diffuser votre présence aux autres joueurs.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Votre position est utilisée pour détecter les joueurs à proximité afin de commencer une quête de proximité.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Votre position est utilisée pour détecter les joueurs à proximité afin de commencer une quête de proximité, même lorsque l'application est en arrière-plan.</string>
+    <string>Proximity Quest a besoin de votre localisation pour détecter la proximité d'autres joueurs (requis par BLE).</string>
+	<!--<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Votre position est utilisée pour détecter les joueurs à proximité afin de commencer une quête de proximité, même lorsque l'application est en arrière-plan.</string>-->
     <key>UIBackgroundModes</key>
     <array>
         <string>bluetooth-central</string>
         <string>bluetooth-peripheral</string>
     </array>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

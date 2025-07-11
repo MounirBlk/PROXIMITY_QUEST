@@ -23,7 +23,7 @@ class QuestScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Joueurs détectés : ${players.map((p) => p.device.name.isNotEmpty ? p.device.name : p.device.remoteId.str).join(', ')}',
+              'Joueurs détectés : ${players.map((p) => p.device.platformName.isNotEmpty ? p.device.platformName : p.device.remoteId.str).join(', ')}',
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
